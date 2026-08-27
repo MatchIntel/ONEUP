@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "1UP Esports — Competitive Fortnite",
+  title: "1UP Esports — Fortnite Roster & Results",
   description:
-    "Official 1UP Esports roster, organization stats and rankings across NA West, NA Central and Brazil.",
+    "OneUp Esports roster, organization rankings, earnings and recent Fortnite competitive results.",
   icons: {
-    icon: "/oneup-logo.png",
-    shortcut: "/oneup-logo.png",
-    apple: "/oneup-logo.png",
+    icon: "/oneup-icon-orange.png",
+    shortcut: "/oneup-icon-orange.png",
+    apple: "/oneup-icon-orange.png",
   },
 };
 
