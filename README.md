@@ -1,15 +1,25 @@
 # 1UP Esports Website
 
-Production-ready OneUp Esports website with the complete 17-player Fortnite roster, organization stats, rankings, announcements, profile links, and the supplied 1UP branding.
+Production-ready OneUp Esports website with the supplied 1UP branding, current pro roster, regional organization rankings, tracked earnings, and recent tournament results.
 
 ## Railway deployment
 
-1. Extract this ZIP and upload every extracted file to a GitHub repository.
+1. Extract the ZIP and upload every extracted file to a GitHub repository.
 2. In Railway, choose **New Project → Deploy from GitHub repo**.
-3. Select the repository. Railway automatically reads `railway.toml`, installs dependencies, builds the site, and starts it.
-4. After the deploy finishes, open **Settings → Networking → Generate Domain**.
+3. Select the repository. Railway reads `railway.toml`, installs dependencies, builds the site, and starts it.
+4. Open **Settings → Networking → Generate Domain** after the deploy finishes.
 
-No custom variables are required. Railway supplies `PORT` automatically.
+No custom Railway variables are required. Railway provides `PORT` automatically.
+
+## Automatic FortniteTracker updates
+
+- The browser requests `/api/fortnite-tracker` when the site opens and every 30 minutes.
+- The server checks the OneUp organization page plus the Global, NA West, NA Central, and Brazil organization boards.
+- Successful public responses update the roster, rankings, earnings, tracker profile links, recent event rows, event logos, and full teammate lineups together.
+- FortniteTracker sometimes uses automated-traffic protection. When that happens, the site serves the included verified snapshot instead of returning an empty or broken dashboard. The sync badge clearly says whether the data is live, partial, or a verified snapshot.
+- Brazil starts at **#62** in the verified snapshot and is replaced whenever the public Brazil board responds successfully.
+
+No API key, database, cron service, or paid proxy is needed.
 
 ## Local development
 
@@ -29,9 +39,16 @@ npm run build
 npm run start
 ```
 
-## Editing content
+## Project map
 
-- `app/page.tsx` contains the player data, links, stats, rankings, and page structure.
-- `app/globals.css` contains the responsive design system.
-- `public/oneup-logo.png` is the supplied 1UP logo.
-- `railway.toml` contains the complete Railway configuration.
+- `app/page.tsx` contains the main page structure and official organization links.
+- `components/live-org-dashboard.tsx` contains the roster filters, tabs, rankings, results cards, and refresh behavior.
+- `lib/fortnite-tracker.ts` contains the public-page parser, 30-minute server cache, and verified fallback data.
+- `app/api/fortnite-tracker/route.ts` exposes the normalized live-data endpoint.
+- `app/globals.css` contains the complete responsive design system.
+- `public/oneup-wordmark-color.png`, `public/oneup-wordmark-white.png`, and `public/oneup-icon-orange.png` are the supplied brand assets.
+- `railway.toml` contains the Railway build and start configuration.
+
+## Data source note
+
+Fortnite and FortniteTracker names, event records, rankings, and logos belong to their respective owners. This project links back to the source records and does not claim affiliation with Epic Games or Tracker Network.
