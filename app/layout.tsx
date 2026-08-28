@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "1UP Esports — Fortnite Roster & Results",
+  title: "1UP Esports — Fortnite Roster & Earnings",
   description:
-    "OneUp Esports roster, organization rankings, earnings and recent Fortnite competitive results.",
+    "OneUp Esports roster, organization rankings and latest Fortnite competitive earnings.",
   icons: {
     icon: "/oneup-icon-orange.png",
     shortcut: "/oneup-icon-orange.png",

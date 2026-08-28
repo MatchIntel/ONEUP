@@ -1,11 +1,11 @@
 import { ArrowDown, ArrowUpRight, ExternalLink } from "lucide-react";
-import { LiveOrgDashboard } from "@/components/live-org-dashboard";
+import { LiveHeroRankings, LiveOrgDashboard } from "@/components/live-org-dashboard";
 import { FALLBACK_DATA } from "@/lib/fortnite-tracker";
 
 const navigation = [
   { label: "Overview", href: "#overview" },
   { label: "Rankings", href: "#rankings" },
-  { label: "Roster & Results", href: "#roster" },
+  { label: "Roster & Earnings", href: "#roster" },
   { label: "Community", href: "#community" },
 ];
 
@@ -53,11 +53,7 @@ export default function Home() {
           <div className="logo-stage">
             <img src="/oneup-wordmark-color.png" alt="1UP Esports" width="520" height="258" />
           </div>
-          <div className="hero-rankings">
-            <span><small>NA WEST</small><strong>#1</strong></span>
-            <span><small>BRAZIL</small><strong>#62</strong></span>
-            <span><small>GLOBAL</small><strong>#12</strong></span>
-          </div>
+          <LiveHeroRankings initialData={FALLBACK_DATA} />
         </aside>
       </section>
 
@@ -95,7 +91,7 @@ export default function Home() {
             <p>Competitive Fortnite. One team, worldwide.</p>
           </div>
           <nav aria-label="Footer navigation">
-            <a href="#overview">Overview</a><a href="#rankings">Rankings</a><a href="#roster">Roster & Results</a><a href="#community">Community</a>
+            <a href="#overview">Overview</a><a href="#rankings">Rankings</a><a href="#roster">Roster & Earnings</a><a href="#community">Community</a>
           </nav>
           <div className="footer-social">
             <a href="https://x.com/oneupesport" target="_blank" rel="noopener noreferrer">X / Twitter</a>
