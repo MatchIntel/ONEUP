@@ -65,7 +65,7 @@ function XMark() {
 
 function PlayerRow({ player, index }: { player: OrgPlayer; index: number }) {
   const avatarUrl = player.xHandle
-    ? `/api/player-avatar?handle=${encodeURIComponent(player.xHandle)}`
+    ? `https://unavatar.io/x/${encodeURIComponent(player.xHandle)}`
     : "/oneup-icon-orange.png";
 
   return (
@@ -79,6 +79,7 @@ function PlayerRow({ player, index }: { player: OrgPlayer; index: number }) {
             width="38"
             height="38"
             loading="lazy"
+            referrerPolicy="no-referrer"
             onError={(event) => {
               const image = event.currentTarget;
               if (player.xHandle && image.dataset.fallback !== "bundled") {
