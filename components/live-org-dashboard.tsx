@@ -64,28 +64,26 @@ function XMark() {
 }
 
 function PlayerRow({ player, index }: { player: OrgPlayer; index: number }) {
-  const avatarUrl = player.xHandle
-    ? `https://unavatar.io/x/${encodeURIComponent(player.xHandle)}?ttl=7d&fallback=false`
-    : "/oneup-icon-orange.png";
-
   return (
     <article className="data-player-row">
       <span className="data-index">{String(index + 1).padStart(2, "0")}</span>
       <div className="data-player-main">
-        <span className={player.xHandle ? "player-monogram has-avatar" : "player-monogram"}>
-          <img
-            src={avatarUrl}
-            alt={player.xHandle ? `${player.name} X profile photo` : ""}
-            width="38"
-            height="38"
-            loading="lazy"
-            onError={(event) => {
-              event.currentTarget.onerror = null;
-              event.currentTarget.src = "/oneup-icon-orange.png";
-              event.currentTarget.classList.add("avatar-fallback");
-            }}
-          />
-        </span>
+        {player.xUrl && player.xHandle ? (
+          <a className="player-avatar-link" href={player.xUrl} target="_blank" rel="noopener noreferrer">
+            <span className="player-monogram has-avatar">
+              <img
+                src={`https://unavatar.io/x/${player.xHandle}`}
+                alt={player.name}
+                loading="lazy"
+                referrerPolicy="no-referrer"
+              />
+            </span>
+          </a>
+        ) : (
+          <span className="player-monogram">
+            <img src="/oneup-icon-orange.png" alt="" loading="lazy" />
+          </span>
+        )}
         <span>
           <strong>{player.name}</strong>
           <small>{player.epicName}</small>
