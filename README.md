@@ -1,6 +1,6 @@
 # 1UP Esports Website
 
-Production-ready OneUp Esports website with the supplied 1UP branding, current pro roster, regional organization rankings, tracked earnings, and recent tournament results.
+Production-ready OneUp Esports website with the supplied 1UP branding, current pro roster, auto-updating regional organization rankings, and the latest tracked tournament earning.
 
 ## Railway deployment
 
@@ -15,7 +15,7 @@ No custom Railway variables are required. Railway provides `PORT` automatically.
 
 - The browser requests `/api/fortnite-tracker` when the site opens and every 30 minutes.
 - The server checks the OneUp organization page plus the Global, NA West, NA Central, and Brazil organization boards.
-- Successful public responses update the roster, rankings, earnings, tracker profile links, recent event rows, event logos, and full teammate lineups together.
+- Successful public responses update the roster, all four rankings, earnings, tracker links, the latest cash result, its event artwork, and the full teammate lineup together.
 - FortniteTracker sometimes uses automated-traffic protection. When that happens, the site serves the included verified snapshot instead of returning an empty or broken dashboard. The sync badge clearly says whether the data is live, partial, or a verified snapshot.
 - Brazil starts at **#62** in the verified snapshot and is replaced whenever the public Brazil board responds successfully.
 
@@ -42,7 +42,7 @@ npm run start
 ## Project map
 
 - `app/page.tsx` contains the main page structure and official organization links.
-- `components/live-org-dashboard.tsx` contains the roster filters, tabs, rankings, results cards, and refresh behavior.
+- `components/live-org-dashboard.tsx` contains the roster filters, tabs, rankings, latest-earning card, and refresh behavior.
 - `lib/fortnite-tracker.ts` contains the public-page parser, 30-minute server cache, and verified fallback data.
 - `app/api/fortnite-tracker/route.ts` exposes the normalized live-data endpoint.
 - `app/globals.css` contains the complete responsive design system.
