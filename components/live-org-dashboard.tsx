@@ -64,12 +64,27 @@ function XMark() {
 }
 
 function PlayerRow({ player, index }: { player: OrgPlayer; index: number }) {
+  const avatarUrl = player.xHandle
+    ? `https://unavatar.io/x/${encodeURIComponent(player.xHandle)}?ttl=7d&fallback=false`
+    : "/oneup-icon-orange.png";
+
   return (
     <article className="data-player-row">
       <span className="data-index">{String(index + 1).padStart(2, "0")}</span>
       <div className="data-player-main">
-        <span className="player-monogram" aria-hidden="true">
-          <img src="/oneup-icon-orange.png" alt="" width="34" height="34" />
+        <span className={player.xHandle ? "player-monogram has-avatar" : "player-monogram"}>
+          <img
+            src={avatarUrl}
+            alt={player.xHandle ? `${player.name} X profile photo` : ""}
+            width="38"
+            height="38"
+            loading="lazy"
+            onError={(event) => {
+              event.currentTarget.onerror = null;
+              event.currentTarget.src = "/oneup-icon-orange.png";
+              event.currentTarget.classList.add("avatar-fallback");
+            }}
+          />
         </span>
         <span>
           <strong>{player.name}</strong>
