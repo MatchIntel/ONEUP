@@ -64,35 +64,26 @@ function XMark() {
 }
 
 function PlayerRow({ player, index }: { player: OrgPlayer; index: number }) {
-  const avatarUrl = player.xHandle
-    ? `https://unavatar.io/x/${encodeURIComponent(player.xHandle)}`
-    : "/oneup-icon-orange.png";
-
   return (
     <article className="data-player-row">
       <span className="data-index">{String(index + 1).padStart(2, "0")}</span>
       <div className="data-player-main">
-        <span className={player.xHandle ? "player-monogram has-avatar" : "player-monogram"}>
-          <img
-            src={avatarUrl}
-            alt={player.xHandle ? `${player.name} X profile photo` : ""}
-            width="38"
-            height="38"
-            loading="lazy"
-            referrerPolicy="no-referrer"
-            onError={(event) => {
-              const image = event.currentTarget;
-              if (player.xHandle && image.dataset.fallback !== "bundled") {
-                image.dataset.fallback = "bundled";
-                image.src = `/player-avatars/${encodeURIComponent(player.xHandle)}.webp`;
-                return;
-              }
-              image.onerror = null;
-              image.src = "/oneup-icon-orange.png";
-              image.classList.add("avatar-fallback");
-            }}
-          />
-        </span>
+        {player.xUrl && player.xHandle ? (
+          <a className="player-avatar-link" href={player.xUrl} target="_blank" rel="noopener noreferrer">
+            <span className="player-monogram has-avatar">
+              <img
+                src={`https://unavatar.io/x/${player.xHandle}`}
+                alt={player.name}
+                loading="lazy"
+                referrerPolicy="no-referrer"
+              />
+            </span>
+          </a>
+        ) : (
+          <span className="player-monogram">
+            <img src="/oneup-icon-orange.png" alt="" loading="lazy" />
+          </span>
+        )}
         <span>
           <strong>{player.name}</strong>
           <small>{player.epicName}</small>

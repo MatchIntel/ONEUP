@@ -65,7 +65,8 @@ const competitiveName = (value: string) => value
   .replace(/^1up\s*/, "")
   .replace(/[^a-z0-9]+/g, "");
 
-type PlayerLinks = Pick<OrgPlayer, "trackerUrl" | "xUrl" | "xHandle">;
+type PlayerLinks = Partial<Pick<OrgPlayer, "trackerUrl">> &
+  Pick<OrgPlayer, "xUrl" | "xHandle">;
 
 const PLAYER_LINKS: Record<string, PlayerLinks> = {
   larccoz: {
@@ -148,6 +149,17 @@ const PLAYER_LINKS: Record<string, PlayerLinks> = {
     xUrl: "https://x.com/caiod3us",
     xHandle: "caiod3us",
   },
+  evolved: { xUrl: "https://x.com/Evolvedfnx", xHandle: "Evolvedfnx" },
+  zlinkrain: { xUrl: "https://x.com/zlinkrain", xHandle: "zlinkrain" },
+  velo: { xUrl: "https://x.com/velofnx", xHandle: "velofnx" },
+  munk: { xUrl: "https://x.com/munkfnx", xHandle: "munkfnx" },
+  zno: { xUrl: "https://x.com/znolol", xHandle: "znolol" },
+  prax: { xUrl: "https://x.com/praxfnr", xHandle: "praxfnr" },
+  pax: { xUrl: "https://x.com/paxfnbr2", xHandle: "paxfnbr2" },
+  shark: { xUrl: "https://x.com/sharkfv_", xHandle: "sharkfv_" },
+  dan: { xUrl: "https://x.com/danbotloll", xHandle: "danbotloll" },
+  nitro: { xUrl: "https://x.com/NitroLolz", xHandle: "NitroLolz" },
+  blixy: { xUrl: "https://x.com/blixyfn4", xHandle: "blixyfn4" },
 };
 
 export const PLAYER_X_HANDLES = Object.freeze(

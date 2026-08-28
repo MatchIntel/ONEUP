@@ -16,7 +16,7 @@ No custom Railway variables are required. Railway provides `PORT` automatically.
 - The browser requests `/api/fortnite-tracker` when the site opens and every 30 minutes.
 - The server checks the OneUp organization page plus the Global, NA West, NA Central, and Brazil organization boards.
 - Successful public responses update the roster, all four rankings, earnings, tracker links, the latest cash result, its event artwork, and the full teammate lineup together.
-- Player photos use the exact original `https://unavatar.io/x/{handle}` browser-loading method from `1UP V1.html`, including the no-referrer policy. Verified copies of the supplied X photos remain bundled as a fallback if a live request is temporarily unavailable.
+- Player photos use the exact original `https://unavatar.io/x/{handle}` browser-loading method from `1UP V1.html`, including lazy loading and the no-referrer policy. The avatar itself links directly to that player's X profile.
 - FortniteTracker sometimes uses automated-traffic protection. When that happens, the site serves the included verified snapshot instead of returning an empty or broken dashboard. The sync badge clearly says whether the data is live, partial, or a verified snapshot.
 - Brazil starts at **#62** in the verified snapshot and is replaced whenever the public Brazil board responds successfully.
 
