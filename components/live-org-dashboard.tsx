@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ArrowUpRight,
   BarChart3,
-  CalendarDays,
   CircleDollarSign,
   ExternalLink,
   RefreshCw,
@@ -27,6 +26,34 @@ const regionNames: Record<RegionCode, string> = {
 
 const money = (value: number) => `$${value.toLocaleString("en-US")}`;
 const number = (value: number) => value.toLocaleString("en-US");
+
+export function LiveHeroRankings({ initialData }: { initialData: OrgData }) {
+  const [rankings, setRankings] = useState(initialData.rankings);
+
+  useEffect(() => {
+    const refreshRankings = async () => {
+      const response = await fetch("/api/fortnite-tracker", { cache: "no-store" });
+      if (response.ok) setRankings(((await response.json()) as OrgData).rankings);
+    };
+    void refreshRankings();
+    const timer = window.setInterval(
+      () => void refreshRankings(),
+      initialData.refreshMinutes * 60 * 1000,
+    );
+    return () => window.clearInterval(timer);
+  }, [initialData.refreshMinutes]);
+
+  return (
+    <div className="hero-rankings">
+      {rankings.map((ranking) => (
+        <a href={ranking.url} target="_blank" rel="noopener noreferrer" key={ranking.code}>
+          <small>{ranking.label}</small>
+          <strong>#{ranking.rank}</strong>
+        </a>
+      ))}
+    </div>
+  );
+}
 
 function XMark() {
   return (
@@ -58,10 +85,6 @@ function PlayerRow({ player, index }: { player: OrgPlayer; index: number }) {
         <strong>{money(player.earnings)}</strong>
         <small>{player.earningsRank ? `#${number(player.earningsRank)} earnings` : "Tracked earnings"}</small>
       </span>
-      <span className="joined-date">
-        <CalendarDays aria-hidden="true" />
-        {player.joined}
-      </span>
       <span className="data-actions">
         {player.xUrl ? (
           <a href={player.xUrl} target="_blank" rel="noopener noreferrer" aria-label={`${player.name} on X`}>
@@ -91,61 +114,61 @@ function eventCode(event: OrgEvent) {
 function EventCard({ event }: { event: OrgEvent }) {
   return (
     <article className="event-card">
-      <header className="event-card-header">
-        <div className="event-identity">
-          <span className="event-logo">
-            {event.eventLogo ? <img src={event.eventLogo} alt="" /> : <b>{eventCode(event)}</b>}
-          </span>
-          <span>
-            <small>{event.stage}</small>
+      <div className="event-poster">
+        {event.eventLogo ? (
+          <img src={event.eventLogo} alt={`${event.eventName} event artwork`} />
+        ) : (
+          <div className="event-poster-fallback">
+            <img src="/oneup-icon-orange.png" alt="" />
+            <b>{eventCode(event)}</b>
+          </div>
+        )}
+        <span>{event.placement}</span>
+      </div>
+
+      <div className="event-card-copy">
+        <header className="event-card-header">
+          <div className="event-identity">
+            <small>Latest earning · {event.dateLabel}</small>
             <strong>{event.eventName}</strong>
+            <p>{event.stage} · {event.region}</p>
+          </div>
+        </header>
+
+        <div className="event-roster">
+          <small>TEAM</small>
+          <div>
+            {event.roster.map((member) => (
+              <span className={member.isOneUp ? "event-member signed" : "event-member"} key={member.name}>
+                {member.isOneUp ? <b>1UP</b> : null}
+                {member.name}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="event-stats">
+          <span>
+            <small>PLACE</small>
+            <strong>{event.placement}</strong>
+          </span>
+          <span className="event-earnings">
+            <small>EARNINGS</small>
+            <strong>{event.earningsLabel}</strong>
           </span>
         </div>
-        <span className={`result-badge ${event.outcome.toLowerCase()}`}>{event.outcome}</span>
-      </header>
 
-      <div className="event-context">
-        <span>{event.region}</span>
-        <span>{event.dateLabel}</span>
+        <a className="event-link" href={event.trackerUrl} target="_blank" rel="noopener noreferrer">
+          View on FortniteTracker <ArrowUpRight aria-hidden="true" />
+        </a>
       </div>
-
-      <div className="event-roster">
-        <small>ROSTER</small>
-        <div>
-          {event.roster.map((member) => (
-            <span className={member.isOneUp ? "event-member signed" : "event-member"} key={member.name}>
-              {member.isOneUp ? <b>1UP</b> : null}
-              {member.name}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      <div className="event-stats">
-        <span>
-          <small>PLACE</small>
-          <strong>{event.placement}</strong>
-        </span>
-        <span>
-          <small>PR POINTS</small>
-          <strong>{event.prPoints ? number(event.prPoints) : "—"}</strong>
-        </span>
-        <span className="event-earnings">
-          <small>RESULT</small>
-          <strong>{event.earningsLabel}</strong>
-        </span>
-      </div>
-
-      <a className="event-link" href={event.trackerUrl} target="_blank" rel="noopener noreferrer">
-        Open event on FortniteTracker <ArrowUpRight aria-hidden="true" />
-      </a>
     </article>
   );
 }
 
 export function LiveOrgDashboard({ initialData }: { initialData: OrgData }) {
   const [data, setData] = useState(initialData);
-  const [activeTab, setActiveTab] = useState<"roster" | "results">("roster");
+  const [activeTab, setActiveTab] = useState<"roster" | "earnings">("roster");
   const [region, setRegion] = useState<"ALL" | RegionCode>("ALL");
   const [refreshing, setRefreshing] = useState(false);
 
@@ -180,6 +203,7 @@ export function LiveOrgDashboard({ initialData }: { initialData: OrgData }) {
     ? data.roster
     : data.roster.filter((player) => player.region === region);
   const activeEarnings = data.roster.reduce((total, player) => total + player.earnings, 0);
+  const latestEarning = data.events.find((event) => event.earnings > 0);
   const stateLabel = data.sourceState === "live"
     ? "Live from Tracker"
     : data.sourceState === "partial"
@@ -203,22 +227,18 @@ export function LiveOrgDashboard({ initialData }: { initialData: OrgData }) {
           <article className="stat-feature">
             <span>Organization earnings</span>
             <strong>$591,215</strong>
-            <p>All-time competitive earnings carried over from the 1UP tracker.</p>
           </article>
           <article>
             <span>Active roster earnings</span>
             <strong>{money(activeEarnings)}</strong>
-            <p>Current pros, summed from their tracked profiles.</p>
           </article>
           <article>
             <span>Current pro roster</span>
             <strong>{data.roster.length}</strong>
-            <p>Signed competitors currently listed by FortniteTracker.</p>
           </article>
           <article>
             <span>Cash Cup wins</span>
             <strong>57</strong>
-            <p>Recorded wins from the original 1UP dashboard.</p>
           </article>
         </div>
       </section>
@@ -230,9 +250,9 @@ export function LiveOrgDashboard({ initialData }: { initialData: OrgData }) {
               <span>02</span>
               <p>ORGANIZATION RANKINGS</p>
             </div>
-            <h2>One tag. Four boards.</h2>
+            <h2>Regional rankings.</h2>
           </div>
-          <p>Organization placement refreshed against the FortniteTracker leaderboards every 30 minutes.</p>
+          <p>Updated from FortniteTracker every 30 minutes.</p>
         </div>
 
         <div className="ranking-grid">
@@ -259,7 +279,7 @@ export function LiveOrgDashboard({ initialData }: { initialData: OrgData }) {
               <span>03</span>
               <p>COMPETITIVE HUB</p>
             </div>
-            <h2>The roster and the results.</h2>
+            <h2>Roster & earnings.</h2>
           </div>
           <div className="sync-panel" title="FortniteTracker may temporarily serve a verified local snapshot when it rate-limits automated requests.">
             <span className={`sync-dot ${data.sourceState}`} />
@@ -287,12 +307,12 @@ export function LiveOrgDashboard({ initialData }: { initialData: OrgData }) {
           <button
             type="button"
             role="tab"
-            aria-selected={activeTab === "results"}
-            className={activeTab === "results" ? "active" : ""}
-            onClick={() => setActiveTab("results")}
+            aria-selected={activeTab === "earnings"}
+            className={activeTab === "earnings" ? "active" : ""}
+            onClick={() => setActiveTab("earnings")}
           >
             <CircleDollarSign aria-hidden="true" />
-            Recent results <b>{data.events.length}</b>
+            Recent earnings
           </button>
         </div>
 
@@ -310,26 +330,24 @@ export function LiveOrgDashboard({ initialData }: { initialData: OrgData }) {
             </div>
             <div className="roster-table">
               <div className="roster-table-head" aria-hidden="true">
-                <span>#</span><span>PLAYER</span><span>REGION</span><span>2026 PR</span><span>EARNINGS</span><span>MEMBER SINCE</span><span>LINKS</span>
+                <span>#</span><span>PLAYER</span><span>REGION</span><span>2026 PR</span><span>EARNINGS</span><span>LINKS</span>
               </div>
               {visiblePlayers.map((entry, index) => <PlayerRow player={entry} index={index} key={entry.id} />)}
             </div>
           </div>
         ) : (
           <div className="results-view" role="tabpanel">
-            <div className="results-intro">
-              <p>Signed 1UP players are highlighted. Teammates stay visible so every result keeps the full tournament context.</p>
-              <span><b>{money(data.events.reduce((total, event) => total + event.earnings, 0))}</b> shown in recent team results</span>
-            </div>
             <div className="event-grid">
-              {data.events.map((event) => <EventCard event={event} key={event.id} />)}
+              {latestEarning ? <EventCard event={latestEarning} key={latestEarning.id} /> : (
+                <p className="event-empty">No recent cash result is currently listed.</p>
+              )}
             </div>
           </div>
         )}
 
         <div className="tracker-source-bar">
           <span>DATA SOURCE</span>
-          <p>FortniteTracker organization roster, regional org leaderboards and recent-event records.</p>
+          <p>Roster, rankings and latest earnings from FortniteTracker.</p>
           <a href={TRACKER_ORG_URL} target="_blank" rel="noopener noreferrer">
             View source <ExternalLink aria-hidden="true" />
           </a>
