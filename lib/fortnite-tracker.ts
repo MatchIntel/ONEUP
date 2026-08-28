@@ -12,6 +12,7 @@ export type OrgPlayer = {
   earningsRank: number | null;
   trackerUrl: string;
   xUrl?: string;
+  xHandle?: string;
 };
 
 export type OrgRanking = {
@@ -58,6 +59,123 @@ export const TRACKER_ORG_URL =
 const trackerProfile = (epicName: string, region: RegionCode) =>
   `https://fortnitetracker.com/profile/all/${encodeURIComponent(epicName)}/events?region=${region}`;
 
+const competitiveName = (value: string) => value
+  .toLowerCase()
+  .normalize("NFKD")
+  .replace(/^1up\s*/, "")
+  .replace(/[^a-z0-9]+/g, "");
+
+type PlayerLinks = Pick<OrgPlayer, "trackerUrl" | "xUrl" | "xHandle">;
+
+const PLAYER_LINKS: Record<string, PlayerLinks> = {
+  larccoz: {
+    trackerUrl: "https://fortnitetracker.com/profile/all/1UP%20777%C7%83/events",
+    xUrl: "https://x.com/larccoz",
+    xHandle: "larccoz",
+  },
+  mukutaf: {
+    trackerUrl: "https://fortnitetracker.com/profile/all/1up%20mukutaf13/events?id=2b4a3ab5-f60a-4e97-af21-84ab04d4d878",
+    xUrl: "https://x.com/mukutaf2",
+    xHandle: "mukutaf2",
+  },
+  a1alex: {
+    trackerUrl: "https://fortnitetracker.com/profile/kbm/1UP%20a1alex%C7%83/events?region=NAW",
+    xUrl: "https://x.com/a1alexfn",
+    xHandle: "a1alexfn",
+  },
+  darky: {
+    trackerUrl: "https://fortnitetracker.com/profile/kbm/1up%20darky/events?region=NAW",
+    xUrl: "https://x.com/darkynts",
+    xHandle: "darkynts",
+  },
+  bacca: {
+    trackerUrl: "https://fortnitetracker.com/profile/all/1UP%20Bacca/events",
+    xUrl: "https://x.com/fnbacca",
+    xHandle: "fnbacca",
+  },
+  wagers: {
+    trackerUrl: "https://fortnitetracker.com/profile/kbm/1UP%20Wagers%207/events?region=NAC",
+    xUrl: "https://x.com/wagersfn1",
+    xHandle: "wagersfn1",
+  },
+  dolzeur: {
+    trackerUrl: "https://fortnitetracker.com/profile/kbm/1up%20dolzeur/events?region=NAC",
+    xUrl: "https://x.com/dolzeur",
+    xHandle: "dolzeur",
+  },
+  aloe: {
+    trackerUrl: "https://fortnitetracker.com/profile/kbm/1UP%20Aloe/events?region=NAC",
+    xUrl: "https://x.com/aloefr_",
+    xHandle: "aloefr_",
+  },
+  mirops: {
+    trackerUrl: "https://fortnitetracker.com/profile/kbm/1up%20mirops/events?region=NAC",
+    xUrl: "https://x.com/mirops4x",
+    xHandle: "mirops4x",
+  },
+  salt: {
+    trackerUrl: "https://fortnitetracker.com/profile/kbm/1up%20salt/events?region=NAC",
+    xUrl: "https://x.com/salt3xx",
+    xHandle: "salt3xx",
+  },
+  enough: {
+    trackerUrl: "https://fortnitetracker.com/profile/kbm/IAm%20Enough/events?region=NAC",
+    xUrl: "https://x.com/iamenoughh_",
+    xHandle: "iamenoughh_",
+  },
+  qkay: {
+    trackerUrl: "https://fortnitetracker.com/profile/kbm/ALP%20Qkay%C7%83/events?region=NAC",
+    xUrl: "https://x.com/qkayfv",
+    xHandle: "qkayfv",
+  },
+  ultra: {
+    trackerUrl: "https://fortnitetracker.com/profile/kbm/1up%20ultraGOTY/events?region=NAC",
+    xUrl: "https://x.com/ultrafv281",
+    xHandle: "ultrafv281",
+  },
+  xeat: {
+    trackerUrl: "https://fortnitetracker.com/profile/kbm/double%20ch%D0%B0mp/events?region=BR",
+    xUrl: "https://x.com/xeatfn",
+    xHandle: "xeatfn",
+  },
+  renat0: {
+    trackerUrl: "https://fortnitetracker.com/profile/kbm/renat0%C7%83/events?region=BR",
+    xUrl: "https://x.com/renat0fn",
+    xHandle: "renat0fn",
+  },
+  caio: {
+    trackerUrl: "https://fortnitetracker.com/profile/kbm/1UP%20CaioD3US/events?region=BR",
+    xUrl: "https://x.com/caiod3us",
+    xHandle: "caiod3us",
+  },
+};
+
+const PLAYER_LINK_ALIASES: Record<string, string> = {
+  "777": "larccoz",
+  mukutaf13: "mukutaf",
+  doublechmp: "xeat",
+  caiod3us: "caio",
+  iamenough: "enough",
+  alpqkay: "qkay",
+  ultragoty: "ultra",
+};
+
+const playerLinksFor = (value: string) => {
+  const key = competitiveName(value);
+  return PLAYER_LINKS[PLAYER_LINK_ALIASES[key] ?? key];
+};
+
+const withPlayerLinks = (entry: OrgPlayer): OrgPlayer => {
+  const links = playerLinksFor(entry.name) ?? playerLinksFor(entry.epicName);
+  const suppliedHandle = entry.xUrl?.match(/x\.com\/([^/?]+)/i)?.[1];
+  return {
+    ...entry,
+    trackerUrl: links?.trackerUrl ?? entry.trackerUrl,
+    xUrl: links?.xUrl ?? entry.xUrl,
+    xHandle: links?.xHandle ?? suppliedHandle,
+  };
+};
+
 const player = (
   name: string,
   epicName: string,
@@ -68,7 +186,7 @@ const player = (
   earnings: number,
   earningsRank: number | null,
   xUrl?: string,
-): OrgPlayer => ({
+): OrgPlayer => withPlayerLinks({
   id: name.toLowerCase(),
   name,
   epicName,
@@ -92,7 +210,7 @@ const SNAPSHOT_ROSTER: OrgPlayer[] = [
   player("Munk", "1up munkǃ", "NAW", "Aug 10, 2026", 96526, 18, 13600, 181),
   player("Caio", "1UP CaioD3US", "BR", "Aug 14, 2026", 87842, 52, 10430, 203, "https://x.com/caiod3us"),
   player("Aloe", "1UP Aloe", "NAC", "Aug 12, 2026", 87272, 58, 10250, 123, "https://x.com/aloefr_"),
-  player("Alex", "1UP a1alexǃ", "NAW", "Aug 08, 2026", 75334, 42, 8830, 246, "https://x.com/a1alexfn"),
+  player("A1alex", "1UP a1alexǃ", "NAW", "Aug 08, 2026", 75334, 42, 8830, 246, "https://x.com/a1alexfn"),
   player("Enough", "IAm Enough", "NAC", "Jun 02, 2024", 76875, 73, 11825, 115, "https://x.com/iamenoughh_"),
   player("Jemitty", "1up Jemitty", "NAC", "Jun 06, 2025", 82888, 65, 5575, 202, "https://x.com/jemitty5"),
   player("Salt", "1up salt", "NAC", "Aug 05, 2026", 70676, 82, 11900, 114, "https://x.com/salt3xx"),
@@ -247,7 +365,7 @@ const parseRoster = (html: string): OrgPlayer[] => {
       const prNumbers = regionCell.replace(regionMatch?.[0] ?? "", "").match(/[\d,]+/g) ?? [];
       const earningNumbers = earningsCell.match(/[\d,]+/g) ?? [];
       const epicName = playerText.replace(new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*`, "i"), "").trim() || name;
-      return {
+      return withPlayerLinks({
         id: `${name.toLowerCase()}-${index}`,
         name,
         epicName,
@@ -258,7 +376,7 @@ const parseRoster = (html: string): OrgPlayer[] => {
         earnings: parseInteger(earningNumbers[0] ?? "0"),
         earningsRank: earningNumbers[1] ? parseInteger(earningNumbers[1]) : null,
         trackerUrl: firstHref(playerCell),
-      };
+      });
     })
     .filter((entry): entry is OrgPlayer => Boolean(entry));
 };
@@ -273,12 +391,6 @@ const parseRanking = (html: string) => {
   }
   return null;
 };
-
-const competitiveName = (value: string) => value
-  .toLowerCase()
-  .normalize("NFKD")
-  .replace(/^1up\s*/, "")
-  .replace(/[^a-z0-9]+/g, "");
 
 const parseEventMembers = (cellHtml: string, currentNames: Set<string>) => {
   const linked = [...cellHtml.matchAll(/<a\b[^>]*>([\s\S]*?)<\/a>/gi)]
