@@ -118,9 +118,9 @@ const SNAPSHOT_EVENTS: OrgEvent[] = [
     eventName: "Fortnite Performance Evaluation",
     stage: "Event 8 · Round 2",
     region: "NA Central",
-    dateLabel: "Season 41",
+    dateLabel: "Aug 7, 2026",
     placement: "1st",
-    prPoints: null,
+    prPoints: 500,
     earnings: 800,
     earningsLabel: "$800 team · $400 each",
     roster: [
@@ -129,72 +129,6 @@ const SNAPSHOT_EVENTS: OrgEvent[] = [
     ],
     trackerUrl: "https://fortnitetracker.com/events/epicgames_S41_PerformanceEvaluation_NAC?page=0&window=S41_PerformanceEvaluation_Event8Round2_NAC",
     outcome: "EARNED",
-  },
-  {
-    id: "solo-victory-cup-zno",
-    eventName: "Solo Victory Cup",
-    stage: "Day 2 · Round 2",
-    region: "NA West",
-    dateLabel: "Jun 20, 2026",
-    placement: "1st",
-    prPoints: 1000,
-    earnings: 200,
-    earningsLabel: "$200",
-    roster: [{ name: "Zno", isOneUp: true }],
-    trackerUrl: "https://fortnitetracker.com/events/epicgames_S41_SoloVictoryCup_NAW?page=0&window=S41_SoloVictoryCup_Round2_Day2_NAW",
-    outcome: "EARNED",
-  },
-  {
-    id: "fncs-division-1-week-5",
-    eventName: "FNCS Division 1",
-    stage: "Week 5 Finals",
-    region: "NA West",
-    dateLabel: "May 24, 2026",
-    placement: "5th",
-    prPoints: 2400,
-    earnings: 400,
-    earningsLabel: "$400 team · $200 each",
-    roster: [
-      { name: "Timko", isOneUp: false },
-      { name: "larccoz", isOneUp: true },
-    ],
-    trackerUrl: "https://fortnitetracker.com/events/epicgames_S40_FNCSDivisionalCup_Division1_NAW?page=0&window=S40_FNCSDivisionalCup_Division1_Week5Final_NAW",
-    outcome: "EARNED",
-  },
-  {
-    id: "fncs-division-1-week-4",
-    eventName: "FNCS Division 1",
-    stage: "Week 4 Finals",
-    region: "NA West",
-    dateLabel: "May 17, 2026",
-    placement: "3rd",
-    prPoints: 2550,
-    earnings: 3000,
-    earningsLabel: "$3,000 team · $1,000 each",
-    roster: [
-      { name: "Zyro", isOneUp: false },
-      { name: "Yasir", isOneUp: false },
-      { name: "ZLinkRain", isOneUp: true },
-    ],
-    trackerUrl: "https://fortnitetracker.com/events/epicgames_S33_FNCSDivisionalCup_Division1_NAW?page=0&window=S33_FNCSDivisionalCup_Division1_Week4Final_NAW",
-    outcome: "EARNED",
-  },
-  {
-    id: "fncs-division-1-qualifier-dolzeur",
-    eventName: "FNCS Division 1",
-    stage: "Week 1 · Day 1",
-    region: "NA Central",
-    dateLabel: "Season 41",
-    placement: "2nd",
-    prPoints: null,
-    earnings: 0,
-    earningsLabel: "Qualified",
-    roster: [
-      { name: "Dolzeur", isOneUp: true },
-      { name: "nvtylerh", isOneUp: false },
-    ],
-    trackerUrl: "https://fortnitetracker.com/events/epicgames_S41_FNCSDivisionalCup_Division1_NAC?page=0&window=S41_FNCSDivisionalCup_Division1_Week1Day1_NAC",
-    outcome: "QUALIFIED",
   },
 ];
 
@@ -251,6 +185,7 @@ const parseInteger = (value: string) => {
 const absoluteTrackerUrl = (href: string) => {
   if (!href) return TRACKER_ORG_URL;
   if (href.startsWith("http")) return href;
+  if (href.startsWith("//")) return `https:${href}`;
   return `https://fortnitetracker.com${href.startsWith("/") ? "" : "/"}${href}`;
 };
 
@@ -260,7 +195,7 @@ const firstHref = (html: string) => {
 };
 
 const firstImage = (html: string) => {
-  const match = html.match(/<img[^>]+src=["']([^"']+)["']/i);
+  const match = html.match(/<img[^>]+(?:data-src|src)=["']([^"']+)["']/i);
   return match?.[1] ? absoluteTrackerUrl(match[1]) : undefined;
 };
 
@@ -339,6 +274,12 @@ const parseRanking = (html: string) => {
   return null;
 };
 
+const competitiveName = (value: string) => value
+  .toLowerCase()
+  .normalize("NFKD")
+  .replace(/^1up\s*/, "")
+  .replace(/[^a-z0-9]+/g, "");
+
 const parseEventMembers = (cellHtml: string, currentNames: Set<string>) => {
   const linked = [...cellHtml.matchAll(/<a\b[^>]*>([\s\S]*?)<\/a>/gi)]
     .map((match) => cleanText(match[1]))
@@ -346,13 +287,16 @@ const parseEventMembers = (cellHtml: string, currentNames: Set<string>) => {
   const names = linked.length ? linked : cleanText(cellHtml).split(/\s*\+\s*|\s*,\s*/).filter(Boolean);
   return names.slice(0, 4).map((name) => ({
     name,
-    isOneUp: currentNames.has(name.toLowerCase()),
+    isOneUp: currentNames.has(competitiveName(name)),
   }));
 };
 
 const parseEvents = (html: string, roster: OrgPlayer[]): OrgEvent[] => {
   const eventSection = section(html, "Recent Events");
-  const currentNames = new Set(roster.map((entry) => entry.name.toLowerCase()));
+  const currentNames = new Set(roster.flatMap((entry) => [
+    competitiveName(entry.name),
+    competitiveName(entry.epicName),
+  ]));
   if (!eventSection) return [];
 
   return tableRows(eventSection)
@@ -381,7 +325,8 @@ const parseEvents = (html: string, roster: OrgPlayer[]): OrgEvent[] => {
       };
     })
     .filter((entry): entry is OrgEvent => Boolean(entry))
-    .slice(0, 8);
+    .filter((entry) => entry.earnings > 0)
+    .slice(0, 1);
 };
 
 const fetchPage = async (url: string) => {
