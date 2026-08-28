@@ -2563,6 +2563,12 @@ svg {
   object-fit: contain;
 }
 
+.player-avatar-link {
+  display: inline-flex;
+  flex: 0 0 auto;
+  border-radius: 999px;
+}
+
 .data-player-main strong {
   font-size: 18px;
 }
